@@ -44,8 +44,8 @@ public class Board extends Parent {
                     ship.cells.add(cell);
                     cell.ship = ship;
                     if (!enemy) {
-                        cell.setFill(Color.BROWN);
-                        cell.setStroke(Color.DARKRED);
+                        cell.setFill(Color.YELLOW);
+                        cell.setStroke(Color.YELLOW);
                     }
                 }
             } else {
@@ -55,8 +55,8 @@ public class Board extends Parent {
                     cell.ship = ship;
                     ship.cells.add(cell);
                     if (!enemy) {
-                        cell.setFill(Color.BROWN);
-                        cell.setStroke(Color.DARKRED);
+                        cell.setFill(Color.YELLOW);
+                        cell.setStroke(Color.YELLOW);
                     }
                 }
             }
@@ -166,11 +166,11 @@ public class Board extends Parent {
 
             if (ship != null) {
                 ship.hit();
-                setFill(Color.ORANGERED);
+                setFill(Color.GREEN);
                 if (!ship.isAlive()) {
                     for (int i = 0; i < ship.cells.size(); i++) {
-                        ship.cells.get(i).setFill(Color.BLACK);
-                        ship.cells.get(i).setStroke(Color.BLACK);
+                        ship.cells.get(i).setFill(Color.RED);
+                        ship.cells.get(i).setStroke(Color.DARKRED);
                     }
                     board.ships--;
                 }

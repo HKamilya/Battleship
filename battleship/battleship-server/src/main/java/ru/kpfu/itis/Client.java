@@ -1,32 +1,31 @@
 package ru.kpfu.itis;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.net.ServerSocket;
 import java.util.function.Consumer;
 
-public class Server extends NetworkConnection {
+public class Client extends NetworkConnection {
 
+    private String ip;
     private int port;
 
-
-    public Server(int port, Consumer<Serializable> onReceiveCallback) {
+    public Client(String ip, int port, Consumer<Serializable> onReceiveCallback) {
         super(onReceiveCallback);
+        this.ip = ip;
         this.port = port;
     }
 
     @Override
     protected boolean isServer() {
-        return false;
+        return true;
     }
 
     @Override
     protected String getIP() {
-        return null;
+        return ip;
     }
 
     @Override
     protected int getPort() {
-        return 0;
+        return port;
     }
 }
