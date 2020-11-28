@@ -102,13 +102,11 @@ public class BattleshipBot {
             Ship ship = new Ship(type, event.getButton() == MouseButton.PRIMARY, new ArrayList<>());
             if (playerBoard.placeShip(ship, playerBattleField, cell.x, cell.y)) {
                 int rem = shipsToPlace.removeFirst();
-                deleteButton.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent event) {
-                        playerBoard.deleteShip(ship, playerBattleField, cell.x, cell.y);
-                        shipsToPlace.addFirst(rem);
-                    }
-                });
+                deleteButton.setOnAction(a -> {
+                            playerBoard.deleteShip(ship, playerBattleField, cell.x, cell.y);
+                            shipsToPlace.addFirst(rem);
+                        }
+                );
 
                 if (shipsToPlace.size() == 0) {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
