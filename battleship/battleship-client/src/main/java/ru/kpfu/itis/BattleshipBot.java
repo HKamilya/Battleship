@@ -143,6 +143,15 @@ public class BattleshipBot {
             y = random.nextInt(10);
             cell = playerBoard.getCell(x, y);
             if (lastSuccessMove != null) {
+                if ((playerBoard.getCell(lastSuccessMove.x, lastSuccessMove.y + 1) == null | playerBoard.getCell(lastSuccessMove.x, lastSuccessMove.y + 1).wasShot) &
+                        (playerBoard.getCell(lastSuccessMove.x + 1, lastSuccessMove.y) == null | playerBoard.getCell(lastSuccessMove.x + 1, lastSuccessMove.y).wasShot) &
+                        (playerBoard.getCell(lastSuccessMove.x - 1, lastSuccessMove.y) == null | playerBoard.getCell(lastSuccessMove.x - 1, lastSuccessMove.y).wasShot) &
+                        (playerBoard.getCell(lastSuccessMove.x, lastSuccessMove.y - 1) == null | playerBoard.getCell(lastSuccessMove.x, lastSuccessMove.y - 1).wasShot)) {
+                    if (successMoves.size() != 0) {
+                        lastSuccessMove = successMoves.get(0);
+                        continue;
+                    }
+                }
                 if (lastSuccessMove.x < 9 & lastSuccessMove.y < 9 & lastSuccessMove.y > 0 & lastSuccessMove.x > 0) {
                     if (!playerBoard.getCell(lastSuccessMove.x + 1, lastSuccessMove.y).wasShot) {
                         cell = playerBoard.getCell(lastSuccessMove.x + 1, lastSuccessMove.y);
@@ -207,11 +216,6 @@ public class BattleshipBot {
             }
             int shipsCounter = playerBoard.ships;
             enemyTurn = cell.shoot();
-            if (!enemyTurn) {
-                if (successMoves.size() != 0) {
-                    lastSuccessMove = successMoves.get(0);
-                }
-            }
             if (enemyTurn) {
                 successMoves.add(cell);
                 lastSuccessMove = cell;
