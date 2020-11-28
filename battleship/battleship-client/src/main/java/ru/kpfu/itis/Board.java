@@ -33,6 +33,33 @@ public class Board extends Parent {
         getChildren().add(rows);
     }
 
+    public void deleteShip(Ship ship, int[][] field, int x, int y) {
+        int length = ship.type;
+        if (ship.vertical) {
+            for (int i = y; i < y + length; i++) {
+                Cell cell = getCell(x, i);
+                field[x][i] = 0;
+                ship.cells.remove(cell);
+                cell.ship = null;
+                if (!enemy) {
+                    cell.setFill(Color.LIGHTBLUE);
+                    cell.setStroke(Color.DARKBLUE);
+                }
+            }
+        } else {
+            for (int i = x; i < x + length; i++) {
+                Cell cell = getCell(i, y);
+                field[i][y] = 0;
+                cell.ship = null;
+                ship.cells.remove(cell);
+                if (!enemy) {
+                    cell.setFill(Color.LIGHTBLUE);
+                    cell.setStroke(Color.DARKBLUE);
+                }
+            }
+        }
+    }
+
     public boolean placeShip(Ship ship, int[][] field, int x, int y) {
         if (canPlaceShip(ship, x, y)) {
             int length = ship.type;

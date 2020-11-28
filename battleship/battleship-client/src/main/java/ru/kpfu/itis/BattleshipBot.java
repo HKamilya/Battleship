@@ -1,12 +1,12 @@
 package ru.kpfu.itis;
 
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import ru.kpfu.itis.Board.Cell;
@@ -26,10 +26,12 @@ public class BattleshipBot {
     private int[][] enemyMoves = new int[10][10];
     private int[][] playerMoves = new int[10][10];
     private Cell lastSuccessMove = null;
+    Button deleteButton;
+    private ArrayList<Cell> successMoves = new ArrayList<>();
     int[] ships = {4, 3, 3, 2, 2, 2, 1, 1, 1, 1};
 
-    List<Integer> shipsToPlace = Arrays.stream(ships).boxed().collect(Collectors.toList());
-    List<Integer> shipsToPlace2 = Arrays.stream(ships).boxed().collect(Collectors.toList());
+    Deque<Integer> shipsToPlace = Arrays.stream(ships).boxed().collect(Collectors.toCollection(ArrayDeque::new));
+    Deque<Integer> shipsToPlace2 = Arrays.stream(ships).boxed().collect(Collectors.toCollection(ArrayDeque::new));
 
     private boolean enemyTurn = false;
 
@@ -46,7 +48,9 @@ public class BattleshipBot {
         label2.setFont(Font.font("Arial", 15));
         label3 = new Label(10 + " : " + 10);
         label3.setFont(Font.font("Arial", 32));
-        VBox vBox = new VBox(10, label1, label2, label3);
+        deleteButton = new Button("Отмена");
+        VBox vBox = new VBox(10, label1, label2, label3, deleteButton);
+        vBox.setPadding(new Insets(15, 15, 15, 15));
 
 
         enemyBoard = new Board(true, event -> {
@@ -94,14 +98,24 @@ public class BattleshipBot {
             }
 
             Cell cell = (Cell) event.getSource();
-            int type = shipsToPlace.get(0);
-            if (playerBoard.placeShip(new Ship(type, event.getButton() == MouseButton.PRIMARY, new ArrayList<>()), playerBattleField, cell.x, cell.y)) {
-                shipsToPlace.remove(0);
+            int type = shipsToPlace.getFirst();
+            Ship ship = new Ship(type, event.getButton() == MouseButton.PRIMARY, new ArrayList<>());
+            if (playerBoard.placeShip(ship, playerBattleField, cell.x, cell.y)) {
+                int rem = shipsToPlace.removeFirst();
+                deleteButton.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent event) {
+                        playerBoard.deleteShip(ship, playerBattleField, cell.x, cell.y);
+                        shipsToPlace.addFirst(rem);
+                    }
+                });
+
                 if (shipsToPlace.size() == 0) {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setHeaderText(null);
                     alert.setContentText("Можно приступать к атаке противника");
                     alert.showAndWait();
+                    deleteButton.setDisable(true);
                     startGame();
                 }
             }
@@ -188,7 +202,6 @@ public class BattleshipBot {
                 }
                 x = cell.x;
                 y = cell.y;
-//                System.out.println("tytochki" + x + " " + y);
             }
 
             if (cell.wasShot) {
@@ -196,9 +209,14 @@ public class BattleshipBot {
             }
             int shipsCounter = playerBoard.ships;
             enemyTurn = cell.shoot();
+            if (!enemyTurn) {
+                if (successMoves.size() != 0) {
+                    lastSuccessMove = successMoves.get(0);
+                }
+            }
             if (enemyTurn) {
+                successMoves.add(cell);
                 lastSuccessMove = cell;
-//                System.out.println(lastSuccessMove.x + " " + lastSuccessMove.y);
                 if (shipsCounter > playerBoard.ships) {
                     if (x < 9) {
                         playerBoard.getCell(x + 1, y).wasShot = true;
@@ -224,6 +242,8 @@ public class BattleshipBot {
                     if (y > 0 & x < 9) {
                         playerBoard.getCell(x + 1, y - 1).wasShot = true;
                     }
+                    lastSuccessMove = null;
+                    successMoves.clear();
                 }
                 enemyMoves[x][y] = 1;
                 label3.setText(enemyBoard.ships + " : " + playerBoard.ships);
@@ -258,9 +278,9 @@ public class BattleshipBot {
         while (shipsToPlace2.size() > 0) {
             int x = random.nextInt(10);
             int y = random.nextInt(10);
-            int ship = shipsToPlace2.get(0);
+            int ship = shipsToPlace2.getFirst();
             if (enemyBoard.placeShip(new Ship(ship, Math.random() < 0.5, new ArrayList<>()), enemyBattleField, x, y)) {
-                shipsToPlace2.remove(0);
+                shipsToPlace2.removeFirst();
             }
         }
 
