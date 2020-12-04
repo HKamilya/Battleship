@@ -9,6 +9,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,10 +27,8 @@ public class Board extends Parent {
                 c.setOnMouseClicked(handler);
                 row.getChildren().add(c);
             }
-
             rows.getChildren().add(row);
         }
-
         getChildren().add(rows);
     }
 
@@ -171,7 +170,7 @@ public class Board extends Parent {
         return x >= 0 && x < 10 && y >= 0 && y < 10;
     }
 
-    public class Cell extends Rectangle {
+    public class Cell extends Rectangle implements Serializable {
         public int x, y;
         public Ship ship = null;
         public boolean wasShot = false;

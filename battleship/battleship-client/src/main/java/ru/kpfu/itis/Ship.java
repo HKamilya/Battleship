@@ -1,11 +1,12 @@
 package ru.kpfu.itis;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import ru.kpfu.itis.Board.Cell;
 
-public class Ship {
+public class Ship implements Serializable {
     public int type;
     public boolean vertical = true;
     public List<Cell> cells;

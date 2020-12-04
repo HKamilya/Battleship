@@ -9,7 +9,11 @@ public class HelloController {
     public Button serverGameButton;
     public Button botGameButton;
 
-    public void login(ActionEvent actionEvent) throws IOException {
-        WindowManager.renderBattleshipWindow(Main.primaryStage);
+    public void gameWithBot(ActionEvent actionEvent) throws IOException {
+        WindowManager.renderBattleshipWithBotWindow(Main.primaryStage);
+    }
+
+    public void gameWithUser(ActionEvent actionEvent) throws IOException {
+        WindowManager.renderBattleshipWithUserWindow(Main.primaryStage);
     }
 }
