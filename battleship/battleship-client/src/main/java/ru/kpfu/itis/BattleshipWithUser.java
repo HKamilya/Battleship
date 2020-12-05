@@ -19,15 +19,9 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class BattleshipWithUser implements TCPConnectionListener {
-
-    public BattleshipWithUser() {
-
-    }
-
-    private static final String IP_ADDR = "localhost";
-    private static final int port = 7777;
-    private TCPConnection connection;
+//impl TCPConnectionListener
+public class BattleshipWithUser {
+    private static int port;
 
     private boolean isPlacingShips = false;
     private Board enemyBoard, playerBoard;
@@ -46,13 +40,19 @@ public class BattleshipWithUser implements TCPConnectionListener {
     private Deque<Integer> shipsToPlace = Arrays.stream(ships).boxed().collect(Collectors.toCollection(ArrayDeque::new));
     private boolean enemyTurn = false;
 
+    public BattleshipWithUser() {
 
-    protected Parent createContent() {
-        try {
-            connection = new TCPConnection(this, IP_ADDR, port);
-        } catch (IOException e) {
-            printMessage("Connection exception: " + e);
-        }
+
+    }
+
+
+    protected Parent createContent(int port) {
+        this.port = port;
+//        try {
+//            connection = new TCPConnection(this, IP_ADDR, port);
+//        } catch (IOException e) {
+//            printMessage("Connection exception: " + e);
+//        }
         BorderPane root = new BorderPane();
         root.setPrefSize(950, 600);
 
@@ -75,7 +75,8 @@ public class BattleshipWithUser implements TCPConnectionListener {
             if (cell.wasShot) {
                 return;
             }
-            connection.sendObject(cell);
+            //TODO:тут должен быть
+            // метод оправляющий мой ход
             enemyTurn = !cell.shoot();
             if (!enemyTurn) {
                 playerMoves[cell.x][cell.y] = 1;
@@ -130,13 +131,13 @@ public class BattleshipWithUser implements TCPConnectionListener {
                             deleteButton.setDisable(true);
                             deleteButton.setVisible(false);
                             startGame();
+                            //TODO: тут должен быть
+                            // метод, правляющий мои корабли
                         });
                     }
                 }
             }
         });
-        // отправляю свои корабли
-        connection.sendObject(myShips);
         HBox hbox = new HBox();
         hbox.setAlignment(Pos.CENTER);
         HBox.setHgrow(enemyBoard, Priority.ALWAYS);
@@ -170,32 +171,33 @@ public class BattleshipWithUser implements TCPConnectionListener {
         return new ArrayList<>();
     }
 
-    @Override
-    public void onConnectionReady(TCPConnection tcpConnection) {
-        printMessage("Connection ready...");
-    }
 
-    @Override
-    public void onReceiveObject(TCPConnection tcpConnection, Object object) {
-        printMessage(object);
-    }
-
-    @Override
-    public void onDisconnect(TCPConnection tcpConnection) {
-        printMessage("Connection closed...");
-    }
-
-    @Override
-    public void onException(TCPConnection tcpConnection, Exception e) {
-        printMessage("Connection exception: " + e);
-    }
-
-    private synchronized void printMessage(Object object) {
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                System.out.println(object);
-            }
-        });
-    }
+//    @Override
+//    public void onConnectionReady(TCPConnection tcpConnection) {
+//        printMessage("Connection ready...");
+//    }
+//
+//    @Override
+//    public void onReceiveObject(TCPConnection tcpConnection, Object object) {
+//        printMessage(object);
+//    }
+//
+//    @Override
+//    public void onDisconnect(TCPConnection tcpConnection) {
+//        printMessage("Connection closed...");
+//    }
+//
+//    @Override
+//    public void onException(TCPConnection tcpConnection, Exception e) {
+//        printMessage("Connection exception: " + e);
+//    }
+//
+//    private synchronized void printMessage(Object object) {
+//        Platform.runLater(new Runnable() {
+//            @Override
+//            public void run() {
+//                System.out.println(object);
+//            }
+//        });
+//    }
 }

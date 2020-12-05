@@ -1,15 +1,14 @@
 package ru.kpfu.itis;
 
 
-import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
 
-import javax.swing.*;
-import java.io.IOException;
+import java.util.Optional;
 
 public class WindowManager {
-    public static void renderBattleshipWithBotWindow(Stage primaryStage) throws IOException {
+    public static void renderBattleshipWithBotWindow(Stage primaryStage) {
         BattleshipWithBot controller = new BattleshipWithBot();
         Scene scene = new Scene(controller.createContent());
         primaryStage.setScene(scene);
@@ -17,17 +16,20 @@ public class WindowManager {
         primaryStage.show();
     }
 
-    public static void renderBattleshipWithUserWindow(Stage primaryStage) throws IOException {
+    public static void renderBattleshipWithUserWindow(Stage primaryStage) {
         BattleshipWithUser controller = new BattleshipWithUser();
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                new BattleshipWithUser();
-            }
-        });
-        Scene scene = new Scene(controller.createContent());
-        primaryStage.setScene(scene);
-        primaryStage.setResizable(true);
-        primaryStage.show();
+        TextInputDialog dialog = new TextInputDialog("8080");
+        dialog.setHeaderText("");
+        dialog.setTitle("");
+        dialog.setContentText("Please enter your port:");
+
+// Traditional way to get the response value.
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            Scene scene = new Scene(controller.createContent(Integer.parseInt(result.get())));
+            primaryStage.setScene(scene);
+            primaryStage.setResizable(true);
+            primaryStage.show();
+        }
     }
 }

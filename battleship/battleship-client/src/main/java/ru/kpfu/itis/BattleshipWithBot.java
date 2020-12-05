@@ -1,7 +1,6 @@
 package ru.kpfu.itis;
 
-import javafx.animation.PauseTransition;
-import javafx.animation.SequentialTransition;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -10,11 +9,12 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.util.Duration;
+import javafx.stage.Stage;
 import ru.kpfu.itis.Board.Cell;
 import javafx.scene.text.Font;
 
-import javax.swing.plaf.IconUIResource;
+
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,8 +25,6 @@ public class BattleshipWithBot {
     private Label label3;
     private int[][] enemyBattleField = new int[10][10];
     private int[][] playerBattleField = new int[10][10];
-    private int[][] enemyMoves = new int[10][10];
-    private int[][] playerMoves = new int[10][10];
     private Cell lastSuccessMove = null;
     private Button deleteButton;
     private Button startButton;
@@ -44,8 +42,6 @@ public class BattleshipWithBot {
     protected Parent createContent() {
         BorderPane root = new BorderPane();
         root.setPrefSize(950, 600);
-
-
         Label label1 = new Label("Нажмите правую кнопку мыши, для измения положения корабля");
         label1.setFont(Font.font("Arial", 15));
         label3 = new Label(10 + " : " + 10);
@@ -69,10 +65,7 @@ public class BattleshipWithBot {
             }
             enemyTurn = !cell.shoot();
             if (!enemyTurn) {
-                playerMoves[cell.x][cell.y] = 1;
                 label3.setText(enemyBoard.ships + " : " + playerBoard.ships);
-            } else {
-                playerMoves[cell.x][cell.y] = 2;
             }
 
             if (enemyBoard.ships == 0) {
@@ -87,7 +80,7 @@ public class BattleshipWithBot {
 
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.get() == buttonTypeAgain) {
-
+                    WindowManager.renderBattleshipWithBotWindow(new Stage());
                 } else if (result.get() == buttonTypeCancel) {
                     System.exit(0);
                 }
@@ -281,10 +274,7 @@ public class BattleshipWithBot {
                     successMoves.clear();
                     vertical = null;
                 }
-                enemyMoves[x][y] = 1;
                 label3.setText(enemyBoard.ships + " : " + playerBoard.ships);
-            } else {
-                enemyMoves[x][y] = 2;
             }
 
             if (playerBoard.ships == 0) {
