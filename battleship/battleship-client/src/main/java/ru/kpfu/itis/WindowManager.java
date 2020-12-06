@@ -23,7 +23,6 @@ public class WindowManager {
         dialog.setTitle("");
         dialog.setContentText("Please enter your port:");
 
-// Traditional way to get the response value.
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             Scene scene = new Scene(controller.createContent(Integer.parseInt(result.get())));

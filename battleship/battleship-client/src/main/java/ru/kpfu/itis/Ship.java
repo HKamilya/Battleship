@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.kpfu.itis.Board.Cell;
 
 public class Ship implements Serializable {
     public int type;

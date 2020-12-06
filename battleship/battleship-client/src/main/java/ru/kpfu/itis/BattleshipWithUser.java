@@ -1,7 +1,6 @@
 package ru.kpfu.itis;
 
 
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -12,16 +11,19 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 
 
-import javax.swing.*;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-//impl TCPConnectionListener
-public class BattleshipWithUser {
+
+public class BattleshipWithUser implements TCPConnectionListener {
     private static int port;
+    private static String ipAddr = "localhost";
+
+    private TCPConnection connection;
 
     private boolean isPlacingShips = false;
     private Board enemyBoard, playerBoard;
@@ -35,6 +37,7 @@ public class BattleshipWithUser {
     private boolean isGaming = false;
     int[] ships = {4, 3, 3, 2, 2, 2, 1, 1, 1, 1};
     private List<Ship> myShips = new ArrayList<>();
+    private int[][] myships = new int[10][10];
     private List<Ship> enemyShips = new ArrayList<>();
 
     private Deque<Integer> shipsToPlace = Arrays.stream(ships).boxed().collect(Collectors.toCollection(ArrayDeque::new));
@@ -48,11 +51,11 @@ public class BattleshipWithUser {
 
     protected Parent createContent(int port) {
         this.port = port;
-//        try {
-//            connection = new TCPConnection(this, IP_ADDR, port);
-//        } catch (IOException e) {
-//            printMessage("Connection exception: " + e);
-//        }
+        try {
+            connection = new TCPConnection(this, ipAddr, port);
+        } catch (IOException e) {
+
+        }
         BorderPane root = new BorderPane();
         root.setPrefSize(950, 600);
 
@@ -71,12 +74,13 @@ public class BattleshipWithUser {
             if (!isGaming) {
                 return;
             }
-            Board.Cell cell = (Board.Cell) event.getSource();
+            Cell cell = (Cell) event.getSource();
+            int[] move = {cell.x, cell.y};
             if (cell.wasShot) {
                 return;
             }
-            //TODO:тут должен быть
-            // метод оправляющий мой ход
+            // TODO: оправить ход
+            connection.sendObject(move);
             enemyTurn = !cell.shoot();
             if (!enemyTurn) {
                 playerMoves[cell.x][cell.y] = 1;
@@ -97,42 +101,45 @@ public class BattleshipWithUser {
 
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.get() == buttonTypeAgain) {
-
+                    WindowManager.renderBattleshipWithBotWindow(new Stage());
                 } else if (result.get() == buttonTypeCancel) {
                     System.exit(0);
                 }
             }
 
-            if (enemyTurn)
-                enemyMove();
+            if (enemyTurn) {
+                // TODO: получить ход противника
+            }
+//
         });
-        List<Ship> enemyShips = getEnemyShips();
+//TODO: корабли противника
         for (Ship enemyShip : enemyShips) {
             enemyBoard.placeShip(enemyShip, enemyBattleField, enemyShip.cells.get(0).x, enemyShip.cells.get(0).y);
         }
-        List<Ship> myShips = new ArrayList<>();
         playerBoard = new Board(false, event -> {
             if (shipsToPlace.size() > 0) {
-                Board.Cell cell = (Board.Cell) event.getSource();
+                Cell cell = (Cell) event.getSource();
                 int type = shipsToPlace.getFirst();
                 Ship ship = new Ship(type, event.getButton() == MouseButton.PRIMARY, new ArrayList<>());
                 if (playerBoard.placeShip(ship, playerBattleField, cell.x, cell.y)) {
                     int rem = shipsToPlace.removeFirst();
                     myShips.add(ship);
+                    myships[cell.y][cell.x] = 1;
                     deleteButton.setOnAction(a -> {
                                 playerBoard.deleteShip(ship, playerBattleField, cell.x, cell.y);
                                 shipsToPlace.addFirst(rem);
                                 myShips.remove(ship);
+                                myships[cell.y][cell.x] = 0;
                             }
                     );
 
                     if (shipsToPlace.size() == 0) {
+                        startButton.setVisible(true);
+                        startButton.setDisable(false);
                         startButton.setOnAction(a -> {
                             deleteButton.setDisable(true);
                             deleteButton.setVisible(false);
                             startGame();
-                            //TODO: тут должен быть
-                            // метод, правляющий мои корабли
                         });
                     }
                 }
@@ -153,51 +160,29 @@ public class BattleshipWithUser {
         return root;
     }
 
-    private void enemyMove() {
-        Board.Cell cell = getEnemyMove();
-        playerBoard.getCell(cell.x, cell.y).shoot();
-    }
-
-    private Board.Cell getEnemyMove() {
-        return enemyBoard.getCell(0, 0);
-    }
-
     private void startGame() {
+        // TODO: получить корабли соперника
         isGaming = true;
     }
 
 
-    private List<Ship> getEnemyShips() {
-        return new ArrayList<>();
+    @Override
+    public void onConnectionReady(TCPConnection tcpConnection) {
+        System.out.println("hi");
     }
 
+    @Override
+    public void onReceiveObject(TCPConnection tcpConnection, Object object) {
+        System.out.println(object);
+    }
 
-//    @Override
-//    public void onConnectionReady(TCPConnection tcpConnection) {
-//        printMessage("Connection ready...");
-//    }
-//
-//    @Override
-//    public void onReceiveObject(TCPConnection tcpConnection, Object object) {
-//        printMessage(object);
-//    }
-//
-//    @Override
-//    public void onDisconnect(TCPConnection tcpConnection) {
-//        printMessage("Connection closed...");
-//    }
-//
-//    @Override
-//    public void onException(TCPConnection tcpConnection, Exception e) {
-//        printMessage("Connection exception: " + e);
-//    }
-//
-//    private synchronized void printMessage(Object object) {
-//        Platform.runLater(new Runnable() {
-//            @Override
-//            public void run() {
-//                System.out.println(object);
-//            }
-//        });
-//    }
+    @Override
+    public void onDisconnect(TCPConnection tcpConnection) {
+
+    }
+
+    @Override
+    public void onException(TCPConnection tcpConnection, Exception e) {
+
+    }
 }

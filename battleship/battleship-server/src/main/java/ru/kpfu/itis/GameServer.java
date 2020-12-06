@@ -14,7 +14,7 @@ public class GameServer implements TCPConnectionListener {
 
     private GameServer() {
         System.out.println("Server running...");
-        try (ServerSocket serverSocket = new ServerSocket(7777)) {
+        try (ServerSocket serverSocket = new ServerSocket(8080)) {
             while (true) {
                 try {
                     new TCPConnection(this, serverSocket.accept());
@@ -29,6 +29,7 @@ public class GameServer implements TCPConnectionListener {
 
     @Override
     public synchronized void onConnectionReady(TCPConnection tcpConnection) {
+        System.out.println("otkryt");
         connections.add(tcpConnection);
         sendAllConnections("Client connected: " + tcpConnection);
     }

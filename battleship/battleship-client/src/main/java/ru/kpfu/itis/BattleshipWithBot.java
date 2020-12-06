@@ -10,7 +10,6 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import ru.kpfu.itis.Board.Cell;
 import javafx.scene.text.Font;
 
 
@@ -282,13 +281,16 @@ public class BattleshipWithBot {
                 alert.setTitle("Вы проиграли");
                 alert.setHeaderText(null);
                 alert.setContentText("Удача скоро будет на вашей стороне! \nА пока готовьтесь к новым сражениям.");
+                ButtonType buttonTypeAgain = new ButtonType("Начать сначала");
                 ButtonType buttonTypeCancel = new ButtonType("Выйти из игры", ButtonBar.ButtonData.CANCEL_CLOSE);
 
-                alert.getButtonTypes().setAll(buttonTypeCancel);
+                alert.getButtonTypes().setAll(buttonTypeAgain, buttonTypeCancel);
 
                 Optional<ButtonType> result = alert.showAndWait();
-
-                if (result.get() == buttonTypeCancel) {
+                if (result.get() == buttonTypeAgain) {
+                    Main.primaryStage.setResizable(false);
+                    WindowManager.renderBattleshipWithBotWindow(Main.primaryStage);
+                } else if (result.get() == buttonTypeCancel) {
                     System.exit(0);
                 }
             }
