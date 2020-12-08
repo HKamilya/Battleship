@@ -7,6 +7,7 @@ import java.net.Socket;
 
 public class TCPConnection {
 
+
     private final Socket socket;
     private final Thread rxThread;
     private final TCPConnectionListener eventListener;
@@ -28,7 +29,7 @@ public class TCPConnection {
                 try {
                     eventListener.onConnectionReady(TCPConnection.this);
                     while (!rxThread.isInterrupted()) {
-                        eventListener.onReceiveObject(TCPConnection.this, in.readObject());
+                        eventListener.onReceiveObject(TCPConnection.this, in.readUTF(), in.readObject());
                     }
                 } catch (IOException | ClassNotFoundException e) {
                     eventListener.onException(TCPConnection.this, e);
@@ -40,8 +41,9 @@ public class TCPConnection {
         rxThread.start();
     }
 
-    public synchronized void sendObject(Object object) {
+    public synchronized void sendObject(String string, Object object) {
         try {
+            out.writeUTF(string);
             out.writeObject(object);
             out.flush();
         } catch (IOException e) {
@@ -63,4 +65,5 @@ public class TCPConnection {
     public String toString() {
         return "TCPConnection: " + socket.getInetAddress() + ": " + socket.getPort();
     }
+
 }

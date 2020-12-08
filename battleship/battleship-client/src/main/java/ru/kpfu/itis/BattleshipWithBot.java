@@ -79,7 +79,8 @@ public class BattleshipWithBot {
 
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.get() == buttonTypeAgain) {
-                    WindowManager.renderBattleshipWithBotWindow(new Stage());
+                    Main.primaryStage.setResizable(false);
+                    WindowManager.renderBattleshipWithBotWindow(Main.primaryStage);
                 } else if (result.get() == buttonTypeCancel) {
                     System.exit(0);
                 }

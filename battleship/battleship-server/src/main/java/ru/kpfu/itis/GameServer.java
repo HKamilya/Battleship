@@ -3,6 +3,7 @@ package ru.kpfu.itis;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 
 public class GameServer implements TCPConnectionListener {
@@ -12,9 +13,9 @@ public class GameServer implements TCPConnectionListener {
 
     private final ArrayList<TCPConnection> connections = new ArrayList<>();
 
-    private GameServer() {
+    public GameServer() {
         System.out.println("Server running...");
-        try (ServerSocket serverSocket = new ServerSocket(8080)) {
+        try (ServerSocket serverSocket = new ServerSocket(61626)) {
             while (true) {
                 try {
                     new TCPConnection(this, serverSocket.accept());
@@ -29,20 +30,19 @@ public class GameServer implements TCPConnectionListener {
 
     @Override
     public synchronized void onConnectionReady(TCPConnection tcpConnection) {
-        System.out.println("otkryt");
         connections.add(tcpConnection);
-        sendAllConnections("Client connected: " + tcpConnection);
+        sendAllConnections("Client connected: " + tcpConnection, "");
     }
 
     @Override
-    public synchronized void onReceiveObject(TCPConnection tcpConnection, Object object) {
-        sendAllConnections(object);
+    public synchronized void onReceiveObject(TCPConnection tcpConnection, String string, Object object) {
+        sendAllConnections(string, object);
     }
 
     @Override
     public synchronized void onDisconnect(TCPConnection tcpConnection) {
         connections.remove(tcpConnection);
-        sendAllConnections("Client disconnected: " + tcpConnection);
+        sendAllConnections("Client disconnected: " + tcpConnection, "");
     }
 
     @Override
@@ -50,10 +50,10 @@ public class GameServer implements TCPConnectionListener {
         System.out.println("TCPConnection exception: " + e);
     }
 
-    private void sendAllConnections(Object object) {
+    private void sendAllConnections(String string, Object object) {
         System.out.println(object);
         for (TCPConnection connection : connections) {
-            connection.sendObject(object);
+            connection.sendObject(string, object);
         }
     }
 }
