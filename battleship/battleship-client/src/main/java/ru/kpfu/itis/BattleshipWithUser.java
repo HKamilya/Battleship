@@ -11,7 +11,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import javafx.stage.Stage;
 
 
 import java.io.IOException;
@@ -36,6 +35,7 @@ public class BattleshipWithUser implements TCPConnectionListener {
     private int[][] playerMoves = new int[10][10];
     private Button deleteButton;
     private Button startButton;
+    private Label moveLabel;
     private boolean isGaming = false;
     private boolean isTimeToMove = false;
     private HashMap<int[], HashMap<Integer, Boolean>> myShips = new HashMap<>();
@@ -74,7 +74,10 @@ public class BattleshipWithUser implements TCPConnectionListener {
         label3.setFont(Font.font("Arial", 32));
         deleteButton = new Button("Отмена");
         startButton = new Button("Начать игру");
-        VBox vBox = new VBox(10, label1, label3, startButton, deleteButton);
+        moveLabel = new Label("");
+        VBox vBox = new VBox(10, label1, label3, startButton, deleteButton, moveLabel);
+        moveLabel.setVisible(false);
+        moveLabel.setDisable(true);
         vBox.setPadding(new Insets(15, 15, 15, 15));
         startButton.setVisible(false);
         startButton.setDisable(true);
@@ -112,9 +115,9 @@ public class BattleshipWithUser implements TCPConnectionListener {
                     System.exit(0);
                 }
             }
-
-//            if (enemyTurn)
-//                enemyMove(enemyMove);
+            if (enemyTurn) {
+                connection.sendObject(room + ";" + player1.getId() + "turn", enemyTurn);
+            }
         });
         playerBoard = new Board(false, event -> {
             if (shipsToPlace.size() > 0) {
@@ -162,35 +165,38 @@ public class BattleshipWithUser implements TCPConnectionListener {
     }
 
     private void startGame() {
+        moveLabel.setVisible(true);
+        moveLabel.setDisable(false);
         isGaming = isTimeToMove;
         enemyTurn = !isTimeToMove;
-
     }
 
+
     private void enemyMove(Cell enemyMove) {
-        while (enemyTurn) {
-            Cell cell = playerBoard.getCell(enemyMove.x, enemyMove.y);
-            enemyTurn = cell.shoot();
-            if (playerBoard.ships == 0) {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle("Вы проиграли");
-                alert.setHeaderText(null);
-                alert.setContentText("Удача скоро будет на вашей стороне! \nА пока готовьтесь к новым сражениям.");
-                ButtonType buttonTypeAgain = new ButtonType("Начать сначала");
-                ButtonType buttonTypeCancel = new ButtonType("Выйти из игры", ButtonBar.ButtonData.CANCEL_CLOSE);
+        enemyTurn = enemyMove.shoot();
+        if (!enemyTurn) {
+            connection.sendObject(room + ";" + player1.getId() + "turn", !enemyTurn);
+        }
+        if (playerBoard.ships == 0) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Вы проиграли");
+            alert.setHeaderText(null);
+            alert.setContentText("Удача скоро будет на вашей стороне! \nА пока готовьтесь к новым сражениям.");
+            ButtonType buttonTypeAgain = new ButtonType("Начать сначала");
+            ButtonType buttonTypeCancel = new ButtonType("Выйти из игры", ButtonBar.ButtonData.CANCEL_CLOSE);
 
-                alert.getButtonTypes().setAll(buttonTypeAgain, buttonTypeCancel);
+            alert.getButtonTypes().setAll(buttonTypeAgain, buttonTypeCancel);
 
-                Optional<ButtonType> result = alert.showAndWait();
-                if (result.get() == buttonTypeAgain) {
-                    Main.primaryStage.setResizable(false);
-                    WindowManager.renderBattleshipWithBotWindow(Main.primaryStage);
-                } else if (result.get() == buttonTypeCancel) {
-                    System.exit(0);
-                }
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get() == buttonTypeAgain) {
+                Main.primaryStage.setResizable(false);
+                WindowManager.renderBattleshipWithBotWindow(Main.primaryStage);
+            } else if (result.get() == buttonTypeCancel) {
+                System.exit(0);
             }
         }
     }
+
 
     private void sendShips() {
         connection.sendObject(room + ";" + player1.getId() + "ships", myShips);
@@ -210,14 +216,12 @@ public class BattleshipWithUser implements TCPConnectionListener {
             player1.setId(id);
         }
         String sub = string.substring(0, room.length());
-        if (sub.equals(String.valueOf(room))) {
+        if (sub.equals(room)) {
             String id = string.substring(room.length() + 1, room.length() + 6);
             if (player1.getId() != Integer.parseInt(id)) {
                 if (player2.getId() == 0) {
                     player2.setId(Integer.parseInt(id));
-                    System.out.println(player2.getId());
                 }
-                System.out.println(player2.getId());
                 System.out.println("oh, it works? ¯\\_(ツ)_/¯ " + string + " " + object);
                 if (string.equals(room + ";" + player2.getId() + "ships")) {
                     if (player2.getId() < player1.getId()) {
@@ -243,6 +247,14 @@ public class BattleshipWithUser implements TCPConnectionListener {
                     int[] temp = (int[]) object;
                     enemyMove = playerBoard.getCell(temp[0], temp[1]);
                     enemyMove(enemyMove);
+                }
+                if (string.equals(room + ";" + player2.getId() + "turn")) {
+                    boolean o = (boolean) object;
+                    if (o) {
+                        isTimeToMove = true;
+                        moveLabel.setText("Ваш ход");
+                        startGame();
+                    }
                 }
             }
         }

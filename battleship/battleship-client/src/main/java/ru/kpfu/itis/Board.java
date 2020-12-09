@@ -18,6 +18,19 @@ public class Board extends Parent implements Serializable {
     private boolean enemy = false;
     public int ships = 10;
 
+    public Board(boolean enemy) {
+        this.enemy = enemy;
+        for (int y = 0; y < 10; y++) {
+            HBox row = new HBox();
+            for (int x = 0; x < 10; x++) {
+                Cell c = new Cell(x, y, this);
+                row.getChildren().add(c);
+            }
+            rows.getChildren().add(row);
+        }
+        getChildren().add(rows);
+    }
+
     public Board(boolean enemy, EventHandler<? super MouseEvent> handler) {
         this.enemy = enemy;
         for (int y = 0; y < 10; y++) {
