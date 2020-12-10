@@ -1,6 +1,7 @@
 package ru.kpfu.itis;
 
 
+import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -13,6 +14,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 
 
+import java.beans.EventHandler;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,17 +29,14 @@ public class BattleshipWithUser implements TCPConnectionListener {
     private Player player1;
     private Player player2;
 
-    private boolean isPlacingShips = false;
     private Board enemyBoard, playerBoard;
     private Label label3;
     private int[][] enemyBattleField = new int[10][10];
     private int[][] playerBattleField = new int[10][10];
-    private int[][] playerMoves = new int[10][10];
     private Button deleteButton;
     private Button startButton;
-    private Label moveLabel;
+    private Label moodLabel;
     private boolean isGaming = false;
-    private boolean isTimeToMove = false;
     private HashMap<int[], HashMap<Integer, Boolean>> myShips = new HashMap<>();
     private HashMap<int[], Integer> enemyShips = null;
     private Cell enemyMove;
@@ -54,13 +53,14 @@ public class BattleshipWithUser implements TCPConnectionListener {
 
 
     protected Parent createContent(String room) {
+        moodLabel = new Label("");
         player1 = new Player();
         player1.setId(0);
         player2 = new Player();
         player2.setId(0);
         this.room = room;
         try {
-            connection = new TCPConnection(this, ipAddr, 61626);
+            connection = new TCPConnection(this, ipAddr, 6767);
         } catch (IOException e) {
 
         }
@@ -74,28 +74,32 @@ public class BattleshipWithUser implements TCPConnectionListener {
         label3.setFont(Font.font("Arial", 32));
         deleteButton = new Button("Отмена");
         startButton = new Button("Начать игру");
-        moveLabel = new Label("");
-        VBox vBox = new VBox(10, label1, label3, startButton, deleteButton, moveLabel);
-        moveLabel.setVisible(false);
-        moveLabel.setDisable(true);
+        VBox vBox = new VBox(10, label1, label3, startButton, deleteButton, moodLabel);
         vBox.setPadding(new Insets(15, 15, 15, 15));
         startButton.setVisible(false);
         startButton.setDisable(true);
 
-
+        if (enemyShips != null) {
+            moodLabel.setText("Корабли противника установлены");
+        }
         enemyBoard = new Board(true, event -> {
-            if (!isGaming) {
-                return;
-            }
-            Cell cell = (Cell) event.getSource();
-            int[] move = {cell.x, cell.y};
-            if (cell.wasShot) {
-                return;
-            }
-            connection.sendObject(room + ";" + player1.getId() + "move", move);
-            enemyTurn = !cell.shoot();
-            if (!enemyTurn) {
-                label3.setText(enemyBoard.ships + " : " + playerBoard.ships);
+            if (!isGaming | enemyTurn) {
+                moodLabel.setText("Ход противника");
+                connection.sendObject(room + ";" + player1.getId() + "turn", enemyTurn);
+            } else {
+                if (!enemyTurn) {
+                    moodLabel.setText("Ваш ход");
+                    Cell cell = (Cell) event.getSource();
+                    int[] move = {cell.x, cell.y};
+                    if (cell.wasShot) {
+                        return;
+                    }
+                    connection.sendObject(room + ";" + player1.getId() + "move", move);
+                    enemyTurn = !cell.shoot();
+                    if (!enemyTurn) {
+                        label3.setText(enemyBoard.ships + " : " + playerBoard.ships);
+                    }
+                }
             }
             if (enemyBoard.ships == 0) {
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -110,7 +114,7 @@ public class BattleshipWithUser implements TCPConnectionListener {
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.get() == buttonTypeAgain) {
                     Main.primaryStage.setResizable(false);
-                    WindowManager.renderBattleshipWithBotWindow(Main.primaryStage);
+                    WindowManager.renderBattleshipWithUserWindow(Main.primaryStage);
                 } else if (result.get() == buttonTypeCancel) {
                     System.exit(0);
                 }
@@ -160,22 +164,29 @@ public class BattleshipWithUser implements TCPConnectionListener {
         vBox.setAlignment(Pos.CENTER);
         VBox general = new VBox(vBox, hbox);
         root.setCenter(general);
-
         return root;
     }
 
     private void startGame() {
-        moveLabel.setVisible(true);
-        moveLabel.setDisable(false);
-        isGaming = isTimeToMove;
-        enemyTurn = !isTimeToMove;
+        startButton.setDisable(true);
+        startButton.setVisible(false);
+        if (player2.getId() != 0) {
+            isGaming = player2.getId() < player1.getId();
+            isGaming = true;
+            enemyTurn = false;
+        }
+    }
+
+    private void makeTurn() {
+        enemyTurn = false;
+        isGaming = true;
     }
 
 
     private void enemyMove(Cell enemyMove) {
         enemyTurn = enemyMove.shoot();
-        if (!enemyTurn) {
-            connection.sendObject(room + ";" + player1.getId() + "turn", !enemyTurn);
+        if (enemyTurn) {
+            label3.setText(enemyBoard.ships + " : " + playerBoard.ships);
         }
         if (playerBoard.ships == 0) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -190,7 +201,7 @@ public class BattleshipWithUser implements TCPConnectionListener {
             Optional<ButtonType> result = alert.showAndWait();
             if (result.get() == buttonTypeAgain) {
                 Main.primaryStage.setResizable(false);
-                WindowManager.renderBattleshipWithBotWindow(Main.primaryStage);
+                WindowManager.renderBattleshipWithUserWindow(Main.primaryStage);
             } else if (result.get() == buttonTypeCancel) {
                 System.exit(0);
             }
@@ -205,11 +216,11 @@ public class BattleshipWithUser implements TCPConnectionListener {
 
     @Override
     public void onConnectionReady(TCPConnection tcpConnection) {
-
     }
 
     @Override
     public void onReceiveObject(TCPConnection tcpConnection, String string, Object object) {
+        System.out.println(string);
         if (player1.getId() == 0) {
             String substr = string.substring(45);
             id = Integer.parseInt(substr);
@@ -222,15 +233,7 @@ public class BattleshipWithUser implements TCPConnectionListener {
                 if (player2.getId() == 0) {
                     player2.setId(Integer.parseInt(id));
                 }
-                System.out.println("oh, it works? ¯\\_(ツ)_/¯ " + string + " " + object);
                 if (string.equals(room + ";" + player2.getId() + "ships")) {
-                    if (player2.getId() < player1.getId()) {
-                        isTimeToMove = true;
-                        startGame();
-                    } else {
-                        enemyTurn = true;
-                        startGame();
-                    }
                     enemyShips = (HashMap<int[], Integer>) object;
                     for (Map.Entry shipEq : enemyShips.entrySet()) {
                         int[] coord = (int[]) shipEq.getKey();
@@ -242,6 +245,8 @@ public class BattleshipWithUser implements TCPConnectionListener {
                             enemyBoard.placeShip(ship, enemyBattleField, coord[0], coord[1]);
                         }
                     }
+                    System.out.println("пользователь отправил вам свои корабли");
+                    startGame();
                 }
                 if (string.equals(room + ";" + player2.getId() + "move")) {
                     int[] temp = (int[]) object;
@@ -249,12 +254,7 @@ public class BattleshipWithUser implements TCPConnectionListener {
                     enemyMove(enemyMove);
                 }
                 if (string.equals(room + ";" + player2.getId() + "turn")) {
-                    boolean o = (boolean) object;
-                    if (o) {
-                        isTimeToMove = true;
-                        moveLabel.setText("Ваш ход");
-                        startGame();
-                    }
+                    makeTurn();
                 }
             }
         }

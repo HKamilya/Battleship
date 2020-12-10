@@ -8,7 +8,6 @@ import java.io.IOException;
 public class HelloController {
     public Button serverGameButton;
     public Button botGameButton;
-    public Button createGameButton;
 
     public void gameWithBot(ActionEvent actionEvent) {
         WindowManager.renderBattleshipWithBotWindow(Main.primaryStage);
@@ -18,7 +17,4 @@ public class HelloController {
         WindowManager.renderBattleshipWithUserWindow(Main.primaryStage);
     }
 
-    public void createGame(ActionEvent actionEvent) {
-        WindowManager.renderBattleShipWithUserCreateGame(Main.primaryStage);
-    }
 }

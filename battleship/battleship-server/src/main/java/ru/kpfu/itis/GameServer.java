@@ -15,7 +15,7 @@ public class GameServer implements TCPConnectionListener {
 
     public GameServer() {
         System.out.println("Server running...");
-        try (ServerSocket serverSocket = new ServerSocket(61626)) {
+        try (ServerSocket serverSocket = new ServerSocket(6767)) {
             while (true) {
                 try {
                     new TCPConnection(this, serverSocket.accept());
