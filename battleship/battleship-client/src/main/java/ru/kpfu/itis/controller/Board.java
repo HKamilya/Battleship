@@ -1,4 +1,4 @@
-package ru.kpfu.itis;
+package ru.kpfu.itis.controller;
 
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
@@ -7,7 +7,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -18,8 +17,8 @@ public class Board extends Parent implements Serializable {
     private boolean enemy = false;
     public int ships = 10;
 
-    public Board(boolean enemy) {
-        this.enemy = enemy;
+
+    public Board() {
         for (int y = 0; y < 10; y++) {
             HBox row = new HBox();
             for (int x = 0; x < 10; x++) {
@@ -102,7 +101,6 @@ public class Board extends Parent implements Serializable {
 
             return true;
         }
-
         return false;
     }
 

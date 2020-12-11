@@ -1,9 +1,11 @@
-package ru.kpfu.itis;
+package ru.kpfu.itis.controller;
 
 
 import javafx.scene.Scene;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
+import ru.kpfu.itis.controller.BattleshipWithBot;
+import ru.kpfu.itis.controller.BattleshipWithUser;
 
 import java.util.Optional;
 
@@ -32,5 +34,4 @@ public class WindowManager {
             primaryStage.show();
         }
     }
-
 }

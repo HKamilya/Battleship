@@ -1,7 +1,6 @@
-package ru.kpfu.itis;
+package ru.kpfu.itis.controller;
 
 
-import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -12,20 +11,21 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import ru.kpfu.itis.*;
+import ru.kpfu.itis.Connection;
+import ru.kpfu.itis.model.Player;
 
 
-import java.beans.EventHandler;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 
-public class BattleshipWithUser implements TCPConnectionListener {
-    private boolean connected = false;
+public class BattleshipWithUser implements ConnectionListener {
     private static String room;
     private static String ipAddr = "127.0.0.1";
     int id = 0;
-    private TCPConnection connection;
+    private Connection connection;
     private Player player1;
     private Player player2;
 
@@ -47,20 +47,16 @@ public class BattleshipWithUser implements TCPConnectionListener {
     private boolean enemyTurn = false;
 
     public BattleshipWithUser() {
-
-
     }
 
 
-    protected Parent createContent(String room) {
+    public Parent createContent(String room) {
         moodLabel = new Label("");
-        player1 = new Player();
-        player1.setId(0);
-        player2 = new Player();
-        player2.setId(0);
+        player1 = new Player(0);
+        player2 = new Player(0);
         this.room = room;
         try {
-            connection = new TCPConnection(this, ipAddr, 6767);
+            connection = new Connection(this, ipAddr, 6760);
         } catch (IOException e) {
 
         }
@@ -168,8 +164,6 @@ public class BattleshipWithUser implements TCPConnectionListener {
     }
 
     private void startGame() {
-        startButton.setDisable(true);
-        startButton.setVisible(false);
         if (player2.getId() != 0) {
             isGaming = player2.getId() < player1.getId();
             isGaming = true;
@@ -210,16 +204,18 @@ public class BattleshipWithUser implements TCPConnectionListener {
 
 
     private void sendShips() {
+        startButton.setVisible(false);
+        startButton.setDisable(true);
         connection.sendObject(room + ";" + player1.getId() + "ships", myShips);
     }
 
 
     @Override
-    public void onConnectionReady(TCPConnection tcpConnection) {
+    public void onConnectionReady(Connection connection) {
     }
 
     @Override
-    public void onReceiveObject(TCPConnection tcpConnection, String string, Object object) {
+    public void onReceiveObject(Connection connection, String string, Object object) {
         System.out.println(string);
         if (player1.getId() == 0) {
             String substr = string.substring(45);
@@ -261,12 +257,12 @@ public class BattleshipWithUser implements TCPConnectionListener {
     }
 
     @Override
-    public void onDisconnect(TCPConnection tcpConnection) {
+    public void onDisconnect(Connection connection) {
 
     }
 
     @Override
-    public void onException(TCPConnection tcpConnection, Exception e) {
+    public void onException(Connection connection, Exception e) {
 
     }
 }

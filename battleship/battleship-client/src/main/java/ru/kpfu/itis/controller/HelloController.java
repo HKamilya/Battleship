@@ -1,9 +1,8 @@
-package ru.kpfu.itis;
+package ru.kpfu.itis.controller;
 
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
-
-import java.io.IOException;
+import ru.kpfu.itis.Main;
 
 public class HelloController {
     public Button serverGameButton;

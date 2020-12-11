@@ -1,4 +1,5 @@
-package ru.kpfu.itis;
+package ru.kpfu.itis.controller;
+
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ public class Ship implements Serializable {
     public boolean vertical = true;
     public List<Cell> cells;
 
-    private int health;
+    public int health;
 
     public Ship(int type, boolean vertical, ArrayList<Cell> cells) {
         this.type = type;

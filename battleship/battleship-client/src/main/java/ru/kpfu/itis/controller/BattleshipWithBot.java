@@ -1,4 +1,4 @@
-package ru.kpfu.itis;
+package ru.kpfu.itis.controller;
 
 
 import javafx.geometry.Insets;
@@ -9,11 +9,10 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
 import javafx.scene.text.Font;
+import ru.kpfu.itis.Main;
 
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,7 +37,7 @@ public class BattleshipWithBot {
 
     private Random random = new Random();
 
-    protected Parent createContent() {
+    public Parent createContent() {
         BorderPane root = new BorderPane();
         root.setPrefSize(950, 600);
         Label label1 = new Label("Нажмите правую кнопку мыши, для измения положения корабля");

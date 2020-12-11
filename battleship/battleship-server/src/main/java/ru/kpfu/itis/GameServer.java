@@ -3,22 +3,21 @@ package ru.kpfu.itis;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 
-public class GameServer implements TCPConnectionListener {
+public class GameServer implements ConnectionListener {
     public static void main(String[] args) {
         new GameServer();
     }
 
-    private final ArrayList<TCPConnection> connections = new ArrayList<>();
+    private final ArrayList<Connection> connections = new ArrayList<>();
 
     public GameServer() {
         System.out.println("Server running...");
-        try (ServerSocket serverSocket = new ServerSocket(6767)) {
+        try (ServerSocket serverSocket = new ServerSocket(6760)) {
             while (true) {
                 try {
-                    new TCPConnection(this, serverSocket.accept());
+                    new Connection(this, serverSocket.accept());
                 } catch (IOException e) {
                     System.out.println("TCPConnection exception: " + e);
                 }
@@ -29,30 +28,30 @@ public class GameServer implements TCPConnectionListener {
     }
 
     @Override
-    public synchronized void onConnectionReady(TCPConnection tcpConnection) {
-        connections.add(tcpConnection);
-        sendAllConnections("Client connected: " + tcpConnection, "");
+    public synchronized void onConnectionReady(Connection connection) {
+        connections.add(connection);
+        sendAllConnections("Client connected: " + connection, "");
     }
 
     @Override
-    public synchronized void onReceiveObject(TCPConnection tcpConnection, String string, Object object) {
+    public synchronized void onReceiveObject(Connection connection, String string, Object object) {
         sendAllConnections(string, object);
     }
 
     @Override
-    public synchronized void onDisconnect(TCPConnection tcpConnection) {
-        connections.remove(tcpConnection);
-        sendAllConnections("Client disconnected: " + tcpConnection, "");
+    public synchronized void onDisconnect(Connection connection) {
+        connections.remove(connection);
+        sendAllConnections("Client disconnected: " + connection, "");
     }
 
     @Override
-    public synchronized void onException(TCPConnection tcpConnection, Exception e) {
-        System.out.println("TCPConnection exception: " + e);
+    public synchronized void onException(Connection connection, Exception e) {
+        System.out.println("Connection exception: " + e);
     }
 
     private void sendAllConnections(String string, Object object) {
         System.out.println(object);
-        for (TCPConnection connection : connections) {
+        for (Connection connection : connections) {
             connection.sendObject(string, object);
         }
     }

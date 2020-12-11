@@ -1,4 +1,4 @@
-package ru.kpfu.itis;
+package ru.kpfu.itis.controller;
 
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -11,6 +11,12 @@ public class Cell extends Rectangle implements Serializable {
     public boolean wasShot = false;
 
     private Board board;
+
+
+    public Cell(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
 
     public Cell(int x, int y, Board board) {
         super(30, 30);
@@ -37,7 +43,7 @@ public class Cell extends Rectangle implements Serializable {
             }
             return true;
         }
-
         return false;
     }
+
 }

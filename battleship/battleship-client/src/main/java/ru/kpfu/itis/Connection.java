@@ -5,20 +5,20 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class TCPConnection {
+public class Connection {
 
 
     private final Socket socket;
     private final Thread rxThread;
-    private final TCPConnectionListener eventListener;
+    private final ConnectionListener eventListener;
     private final ObjectInputStream in;
     private final ObjectOutputStream out;
 
-    public TCPConnection(TCPConnectionListener eventListener, String ipAddr, int port) throws IOException {
+    public Connection(ConnectionListener eventListener, String ipAddr, int port) throws IOException {
         this(eventListener, new Socket(ipAddr, port));
     }
 
-    public TCPConnection(TCPConnectionListener eventListener, Socket socket) throws IOException {
+    public Connection(ConnectionListener eventListener, Socket socket) throws IOException {
         this.eventListener = eventListener;
         this.socket = socket;
         this.out = new ObjectOutputStream(socket.getOutputStream());
@@ -27,29 +27,30 @@ public class TCPConnection {
             @Override
             public void run() {
                 try {
-                    eventListener.onConnectionReady(TCPConnection.this);
+                    eventListener.onConnectionReady(Connection.this);
                     while (!rxThread.isInterrupted()) {
-                        eventListener.onReceiveObject(TCPConnection.this, in.readUTF(), in.readObject());
+                        eventListener.onReceiveObject(Connection.this, in.readUTF(), in.readObject());
                     }
                 } catch (IOException | ClassNotFoundException e) {
-                    eventListener.onException(TCPConnection.this, e);
+                    eventListener.onException(Connection.this, e);
                 } finally {
-                    eventListener.onDisconnect(TCPConnection.this);
+                    eventListener.onDisconnect(Connection.this);
                 }
             }
         });
         rxThread.start();
     }
 
-    public synchronized void sendObject(String string, Object object) {
+    public synchronized String sendObject(String string, Object object) {
         try {
             out.writeUTF(string);
             out.writeObject(object);
             out.flush();
         } catch (IOException e) {
-            eventListener.onException(TCPConnection.this, e);
+            eventListener.onException(Connection.this, e);
             disconnect();
         }
+        return string;
     }
 
     public synchronized void disconnect() {
@@ -57,7 +58,7 @@ public class TCPConnection {
         try {
             socket.close();
         } catch (IOException e) {
-            eventListener.onException(TCPConnection.this, e);
+            eventListener.onException(Connection.this, e);
         }
     }
 
