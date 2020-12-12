@@ -30,7 +30,6 @@ public class BattleshipWithUser implements ConnectionListener {
     private Player player2;
 
     private Board enemyBoard, playerBoard;
-    private Label label3;
     private int[][] enemyBattleField = new int[10][10];
     private int[][] playerBattleField = new int[10][10];
     private Button deleteButton;
@@ -56,7 +55,7 @@ public class BattleshipWithUser implements ConnectionListener {
         player2 = new Player(0);
         this.room = room;
         try {
-            connection = new Connection(this, ipAddr, 6760);
+            connection = new Connection(this, ipAddr, 6745);
         } catch (IOException e) {
 
         }
@@ -66,11 +65,9 @@ public class BattleshipWithUser implements ConnectionListener {
 
         Label label1 = new Label("Нажмите правую кнопку мыши, для измения положения корабля");
         label1.setFont(Font.font("Arial", 15));
-        label3 = new Label(10 + " : " + 10);
-        label3.setFont(Font.font("Arial", 32));
         deleteButton = new Button("Отмена");
         startButton = new Button("Начать игру");
-        VBox vBox = new VBox(10, label1, label3, startButton, deleteButton, moodLabel);
+        VBox vBox = new VBox(10, label1, startButton, deleteButton, moodLabel);
         vBox.setPadding(new Insets(15, 15, 15, 15));
         startButton.setVisible(false);
         startButton.setDisable(true);
@@ -92,9 +89,6 @@ public class BattleshipWithUser implements ConnectionListener {
                     }
                     connection.sendObject(room + ";" + player1.getId() + "move", move);
                     enemyTurn = !cell.shoot();
-                    if (!enemyTurn) {
-                        label3.setText(enemyBoard.ships + " : " + playerBoard.ships);
-                    }
                 }
             }
             if (enemyBoard.ships == 0) {
@@ -110,11 +104,40 @@ public class BattleshipWithUser implements ConnectionListener {
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.get() == buttonTypeAgain) {
                     Main.primaryStage.setResizable(false);
-                    WindowManager.renderBattleshipWithUserWindow(Main.primaryStage);
+                    Main main = new Main();
+                    try {
+                        main.start(Main.primaryStage);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 } else if (result.get() == buttonTypeCancel) {
                     System.exit(0);
                 }
             }
+            if (playerBoard.ships == 0) {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Вы проиграли");
+                alert.setHeaderText(null);
+                alert.setContentText("Удача скоро будет на вашей стороне! \nА пока готовьтесь к новым сражениям.");
+                ButtonType buttonTypeAgain = new ButtonType("Начать сначала");
+                ButtonType buttonTypeCancel = new ButtonType("Выйти из игры", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+                alert.getButtonTypes().setAll(buttonTypeAgain, buttonTypeCancel);
+
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.get() == buttonTypeAgain) {
+                    Main.primaryStage.setResizable(false);
+                    Main main = new Main();
+                    try {
+                        main.start(Main.primaryStage);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else if (result.get() == buttonTypeCancel) {
+                    System.exit(0);
+                }
+            }
+
             if (enemyTurn) {
                 connection.sendObject(room + ";" + player1.getId() + "turn", enemyTurn);
             }
@@ -164,7 +187,7 @@ public class BattleshipWithUser implements ConnectionListener {
     }
 
     private void startGame() {
-        if (player2.getId() != 0) {
+        if (player2.getId() != 0 & enemyShips != null) {
             isGaming = player2.getId() < player1.getId();
             isGaming = true;
             enemyTurn = false;
@@ -179,27 +202,6 @@ public class BattleshipWithUser implements ConnectionListener {
 
     private void enemyMove(Cell enemyMove) {
         enemyTurn = enemyMove.shoot();
-        if (enemyTurn) {
-            label3.setText(enemyBoard.ships + " : " + playerBoard.ships);
-        }
-        if (playerBoard.ships == 0) {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Вы проиграли");
-            alert.setHeaderText(null);
-            alert.setContentText("Удача скоро будет на вашей стороне! \nА пока готовьтесь к новым сражениям.");
-            ButtonType buttonTypeAgain = new ButtonType("Начать сначала");
-            ButtonType buttonTypeCancel = new ButtonType("Выйти из игры", ButtonBar.ButtonData.CANCEL_CLOSE);
-
-            alert.getButtonTypes().setAll(buttonTypeAgain, buttonTypeCancel);
-
-            Optional<ButtonType> result = alert.showAndWait();
-            if (result.get() == buttonTypeAgain) {
-                Main.primaryStage.setResizable(false);
-                WindowManager.renderBattleshipWithUserWindow(Main.primaryStage);
-            } else if (result.get() == buttonTypeCancel) {
-                System.exit(0);
-            }
-        }
     }
 
 
@@ -216,7 +218,6 @@ public class BattleshipWithUser implements ConnectionListener {
 
     @Override
     public void onReceiveObject(Connection connection, String string, Object object) {
-        System.out.println(string);
         if (player1.getId() == 0) {
             String substr = string.substring(45);
             id = Integer.parseInt(substr);
@@ -228,8 +229,10 @@ public class BattleshipWithUser implements ConnectionListener {
             if (player1.getId() != Integer.parseInt(id)) {
                 if (player2.getId() == 0) {
                     player2.setId(Integer.parseInt(id));
+                    connection.sendObject(room + ";" + player1.getId() + "ships", myShips);
                 }
                 if (string.equals(room + ";" + player2.getId() + "ships")) {
+                    System.out.println(string);
                     enemyShips = (HashMap<int[], Integer>) object;
                     for (Map.Entry shipEq : enemyShips.entrySet()) {
                         int[] coord = (int[]) shipEq.getKey();
@@ -241,15 +244,16 @@ public class BattleshipWithUser implements ConnectionListener {
                             enemyBoard.placeShip(ship, enemyBattleField, coord[0], coord[1]);
                         }
                     }
-                    System.out.println("пользователь отправил вам свои корабли");
                     startGame();
                 }
                 if (string.equals(room + ";" + player2.getId() + "move")) {
+                    System.out.println(string);
                     int[] temp = (int[]) object;
                     enemyMove = playerBoard.getCell(temp[0], temp[1]);
                     enemyMove(enemyMove);
                 }
                 if (string.equals(room + ";" + player2.getId() + "turn")) {
+                    System.out.println(string);
                     makeTurn();
                 }
             }
