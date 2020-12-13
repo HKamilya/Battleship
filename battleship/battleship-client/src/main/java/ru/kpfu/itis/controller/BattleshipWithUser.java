@@ -57,7 +57,7 @@ public class BattleshipWithUser implements ConnectionListener {
         try {
             connection = new Connection(this, ipAddr, 6745);
         } catch (IOException e) {
-
+            e.printStackTrace();
         }
         BorderPane root = new BorderPane();
         root.setPrefSize(950, 600);
@@ -188,9 +188,10 @@ public class BattleshipWithUser implements ConnectionListener {
 
     private void startGame() {
         if (player2.getId() != 0 & enemyShips != null) {
-            isGaming = player2.getId() < player1.getId();
-            isGaming = true;
+            isGaming = player2.getId() > player1.getId();
             enemyTurn = false;
+        } else {
+            enemyTurn = true;
         }
     }
 
@@ -225,14 +226,17 @@ public class BattleshipWithUser implements ConnectionListener {
         }
         String sub = string.substring(0, room.length());
         if (sub.equals(room)) {
+            System.out.println(string);
             String id = string.substring(room.length() + 1, room.length() + 6);
             if (player1.getId() != Integer.parseInt(id)) {
                 if (player2.getId() == 0) {
                     player2.setId(Integer.parseInt(id));
-                    connection.sendObject(room + ";" + player1.getId() + "ships", myShips);
+                    if (myShips.size() != 0) {
+                        sendShips();
+                    }
                 }
                 if (string.equals(room + ";" + player2.getId() + "ships")) {
-                    System.out.println(string);
+                    System.out.println(object);
                     enemyShips = (HashMap<int[], Integer>) object;
                     for (Map.Entry shipEq : enemyShips.entrySet()) {
                         int[] coord = (int[]) shipEq.getKey();

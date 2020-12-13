@@ -1,10 +1,17 @@
 package ru.kpfu.itis.model;
 
-import lombok.*;
-
-@Getter
-@Setter
-@AllArgsConstructor
 public class Player {
     private int id;
+
+    public Player(int id) {
+        this.id = id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
 }
