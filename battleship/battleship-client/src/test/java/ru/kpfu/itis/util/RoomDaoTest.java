@@ -85,7 +85,9 @@ class RoomDaoTest {
 
     @Test
     void createRoom() {
-        boolean temp = roomDao.createRoom("001");
-        assertEquals(roomDao.findRoom("001"), temp);
+        int random = (int) (Math.random() * 89);
+        boolean temp = roomDao.createRoom(String.valueOf(random));
+        assertEquals(roomDao.findRoom(String.valueOf(random)), temp);
+
     }
 }
