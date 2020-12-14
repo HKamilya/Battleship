@@ -55,7 +55,7 @@ public class BattleshipWithUser implements ConnectionListener {
         player2 = new Player(0);
         this.room = room;
         try {
-            connection = new Connection(this, ipAddr, 6745);
+            connection = new Connection(this, ipAddr, 6743);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -173,15 +173,18 @@ public class BattleshipWithUser implements ConnectionListener {
             }
         });
         HBox hbox = new HBox();
+        HBox hBox2 = new HBox();
         hbox.setAlignment(Pos.CENTER);
+        hBox2.getChildren().addAll(new Label("Поле противника"), new Label("Ваше поле"));
+        hBox2.setSpacing(150);
+        hBox2.setAlignment(Pos.CENTER);
         HBox.setHgrow(enemyBoard, Priority.ALWAYS);
         HBox.setHgrow(playerBoard, Priority.ALWAYS);
         hbox.getChildren().addAll(enemyBoard, playerBoard);
         hbox.setSpacing(50);
 
-
         vBox.setAlignment(Pos.CENTER);
-        VBox general = new VBox(vBox, hbox);
+        VBox general = new VBox(vBox, hBox2, hbox);
         root.setCenter(general);
         return root;
     }
